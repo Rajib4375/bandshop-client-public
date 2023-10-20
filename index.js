@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 5000;
 
@@ -32,13 +32,48 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const productsCollection = client.db('productsDB').collection('products')
+    const productsCollection = client.db('productsDB').collection('products');
+
+    app.get('/bands/:brand_name', async(req, res)=>{
+        const bandName = req.params.brand_name;
+        const cursor = productsCollection.find({band_name:bandName});
+        const result = await cursor.toArray();
+        res.send(result); 
+    })
+    
+   app.get('/products/:id', async(req, res)=>{
+    const id =req.params.id;
+    const query = {_id: new ObjectId(id)}
+    const result = await productsCollection.findOne(query);
+    res.send(result)
+   })
 
     app.post('/products', async(req, res)=>{
         const newProducts = req.body;
         console.log(newProducts);
        const result = await productsCollection.insertOne(newProducts);
        res.send(result)
+    })
+
+    app.put('/products/:id', async(req, res)=>{
+        const id= req.params.id;
+        const filtar ={_id: new ObjectId(id)}
+        const options ={upsert: true};
+        const updatedProduct = req.body;
+        const product ={
+            $set:{
+                name:updatedProduct.name,
+                category:updatedProduct.category, 
+                image:updatedProduct.image, 
+                price:updatedProduct.price, 
+                description:updatedProduct.description, 
+                reating :updatedProduct.reating, 
+                band_name :updatedProduct.band_name
+            }
+
+        }
+        const result = await productsCollection.updateOne(filtar, product, options);
+        res.send(result);
     })
 
 
