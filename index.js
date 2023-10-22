@@ -55,6 +55,9 @@ async function run() {
        res.send(result)
     })
 
+
+    
+
     app.put('/products/:id', async(req, res)=>{
         const id= req.params.id;
         const filtar ={_id: new ObjectId(id)}
@@ -74,6 +77,13 @@ async function run() {
         }
         const result = await productsCollection.updateOne(filtar, product, options);
         res.send(result);
+    })
+
+    app.delete('/products/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query ={_id : new ObjectId(id)}
+      const result = await productsCollection.deleteOne(query);
+      res.send(result);
     })
 
 
